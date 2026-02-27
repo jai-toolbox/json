@@ -1,4 +1,4 @@
-#scope_file
+#scope_module
 
 Parser_State :: struct {
     data          : string;
@@ -480,4 +480,20 @@ internal_parse_object :: (ps: *Parser_State) -> *Json_Value {
 
     if !ps.has_error parser_set_error(ps, "Unterminated object");
     return null;
+}
+
+
+parse_hex4 :: (ps: *Parser_State) -> u32 {
+    if parser_remaining(ps) < 4 return 0xFFFF_FFFF;
+    result: u32 = 0;
+    for 0..3 {
+        c := parser_advance(ps);
+        digit: u32;
+        if      c >= #char "0" && c <= #char "9" digit = cast(u32)(c - #char "0");
+        else if c >= #char "a" && c <= #char "f" digit = cast(u32)(c - #char "a" + 10);
+        else if c >= #char "A" && c <= #char "F" digit = cast(u32)(c - #char "A" + 10);
+        else return 0xFFFF_FFFF;
+        result = (result << 4) | digit;
+    }
+    return result;
 }
